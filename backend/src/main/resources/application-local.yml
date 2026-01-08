@@ -1,0 +1,28 @@
+spring:
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://localhost:5432/alm_db
+    username: alm_user
+    password: change-me
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 5
+      connection-timeout: 30000
+
+mybatis:
+  type-aliases-package: com.company.alm.domain.*.entity
+  mapper-locations: classpath:mybatis/mapper/**/*.xml
+  configuration:
+    map-underscore-to-camel-case: true
+    default-fetch-size: 100
+    default-statement-timeout: 30
+
+jwt:
+  secret: 946c2301403a68ce705d12d1444a0daac9ea0ff0cc0fd3e6edb153ae8ffdf2f5
+  expiration: 86400000  # 24시간 (밀리초)
+
+logging:
+  level:
+    com.company.alm: DEBUG
+    org.springframework.security: DEBUG
+    org.mybatis: DEBUG
