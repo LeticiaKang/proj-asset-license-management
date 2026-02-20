@@ -37,4 +37,9 @@ public class CommonCode extends BaseEntity {
     @Column(name = "is_active", nullable = false)
     @Builder.Default
     private Boolean isActive = true;
+
+    public void deactivate(Long updId) {
+        this.isActive = false;
+        setUpdId(updId);
+    }
 }

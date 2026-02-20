@@ -28,6 +28,16 @@ export interface MemberRequest {
   phone?: string;
 }
 
+export interface MemberRoleResponse {
+  memberRoleId: number;
+  memberId: number;
+  roleId: number;
+}
+
+export interface MemberRoleRequest {
+  roleIds: number[];
+}
+
 export interface MemberSearchCondition {
   keyword?: string;
   deptId?: number;

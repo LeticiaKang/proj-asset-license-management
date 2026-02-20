@@ -102,8 +102,8 @@ public class Member extends BaseEntity {
     }
 
     public void resign(LocalDate resignDate) {
+        changeEmploymentStatus("RESIGNED");
         this.resignDate = resignDate;
-        this.employmentStatus = "RESIGNED";
         this.isActive = false;
     }
 

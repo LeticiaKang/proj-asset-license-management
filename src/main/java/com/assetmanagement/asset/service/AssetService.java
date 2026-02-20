@@ -134,8 +134,67 @@ public class AssetService {
             .toList();
     }
 
+    @Transactional
+    public AssetCategoryResponse createCategory(AssetCategoryRequest request, Long regId) {
+        AssetCategory parentCategory = null;
+        if (request.getParentCategoryId() != null) {
+            parentCategory = findCategoryOrThrow(request.getParentCategoryId());
+        }
+
+        AssetCategory category = AssetCategory.builder()
+            .categoryName(request.getCategoryName())
+            .categoryCode(request.getCategoryCode())
+            .parentCategory(parentCategory)
+            .categoryOrder(request.getCategoryOrder() != null ? request.getCategoryOrder() : 0)
+            .build();
+
+        category.setRegId(regId);
+        category.setUpdId(regId);
+
+        return AssetCategoryResponse.from(assetCategoryRepository.save(category));
+    }
+
+    @Transactional
+    public AssetCategoryResponse updateCategory(Long categoryId, AssetCategoryRequest request, Long updId) {
+        AssetCategory existing = findCategoryOrThrow(categoryId);
+
+        AssetCategory parentCategory = null;
+        if (request.getParentCategoryId() != null) {
+            parentCategory = findCategoryOrThrow(request.getParentCategoryId());
+        }
+
+        AssetCategory updated = AssetCategory.builder()
+            .categoryId(existing.getCategoryId())
+            .categoryName(request.getCategoryName())
+            .categoryCode(request.getCategoryCode())
+            .parentCategory(parentCategory)
+            .categoryOrder(request.getCategoryOrder() != null ? request.getCategoryOrder() : existing.getCategoryOrder())
+            .isActive(existing.getIsActive())
+            .build();
+
+        updated.setUpdId(updId);
+        return AssetCategoryResponse.from(assetCategoryRepository.save(updated));
+    }
+
+    @Transactional
+    public void deleteCategory(Long categoryId, Long updId) {
+        AssetCategory category = findCategoryOrThrow(categoryId);
+
+        // 하위 카테고리 존재 확인
+        if (assetCategoryRepository.existsByParentCategory_CategoryIdAndIsDeletedFalse(categoryId)) {
+            throw new BusinessException(ErrorCode.COMMON_002, "하위 카테고리가 존재하여 삭제할 수 없습니다.");
+        }
+
+        category.softDelete(updId);
+    }
+
     public List<AssetSummaryResponse> getAssetSummary() {
         return assetRepository.getAssetSummary();
+    }
+
+    private AssetCategory findCategoryOrThrow(Long categoryId) {
+        return assetCategoryRepository.findByCategoryIdAndIsDeletedFalse(categoryId)
+            .orElseThrow(() -> new BusinessException(ErrorCode.COMMON_003));
     }
 
     private Asset findAssetOrThrow(Long assetId) {

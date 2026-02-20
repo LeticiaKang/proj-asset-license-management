@@ -1,10 +1,10 @@
 import React from 'react';
 import {
+  DashboardOutlined,
+  SettingOutlined,
+  TeamOutlined,
   LaptopOutlined,
   KeyOutlined,
-  TeamOutlined,
-  ApartmentOutlined,
-  SettingOutlined,
 } from '@ant-design/icons';
 
 // ── 라우트 설정 타입 ──
@@ -27,11 +27,69 @@ export interface RouteConfig {
  */
 export const routeConfig: RouteConfig[] = [
   {
+    path: '/dashboard',
+    label: '대시보드',
+    icon: <DashboardOutlined />,
+    showInMenu: true,
+  },
+  {
+    path: '/system',
+    label: '시스템 관리',
+    icon: <SettingOutlined />,
+    showInMenu: true,
+    children: [
+      {
+        path: '/menus',
+        label: '메뉴 관리',
+        requiredMenu: '/menus',
+        showInMenu: true,
+      },
+      {
+        path: '/roles',
+        label: '권한 관리',
+        requiredMenu: '/roles',
+        showInMenu: true,
+      },
+      {
+        path: '/common-codes',
+        label: '공통코드 관리',
+        requiredMenu: '/common-codes',
+        showInMenu: true,
+      },
+    ],
+  },
+  {
+    path: '/organization',
+    label: '조직 관리',
+    icon: <TeamOutlined />,
+    showInMenu: true,
+    children: [
+      {
+        path: '/departments',
+        label: '부서 관리',
+        requiredMenu: '/departments',
+        showInMenu: true,
+      },
+      {
+        path: '/members',
+        label: '사용자 관리',
+        requiredMenu: '/members',
+        showInMenu: true,
+      },
+    ],
+  },
+  {
     path: '/assets',
     label: '자산 관리',
     icon: <LaptopOutlined />,
     showInMenu: true,
     children: [
+      {
+        path: '/assets/categories',
+        label: '자산 유형 관리',
+        requiredMenu: '/assets/categories',
+        showInMenu: true,
+      },
       {
         path: '/assets',
         label: '자산 목록',
@@ -59,6 +117,12 @@ export const routeConfig: RouteConfig[] = [
     showInMenu: true,
     children: [
       {
+        path: '/softwares',
+        label: '소프트웨어 관리',
+        requiredMenu: '/softwares',
+        showInMenu: true,
+      },
+      {
         path: '/licenses',
         label: '라이센스 목록',
         requiredMenu: '/licenses',
@@ -77,27 +141,6 @@ export const routeConfig: RouteConfig[] = [
         showInMenu: true,
       },
     ],
-  },
-  {
-    path: '/members',
-    label: '사용자 관리',
-    icon: <TeamOutlined />,
-    requiredMenu: '/members',
-    showInMenu: true,
-  },
-  {
-    path: '/departments',
-    label: '부서 관리',
-    icon: <ApartmentOutlined />,
-    requiredMenu: '/departments',
-    showInMenu: true,
-  },
-  {
-    path: '/menus',
-    label: '메뉴 관리',
-    icon: <SettingOutlined />,
-    requiredMenu: '/menus',
-    showInMenu: true,
   },
 ];
 

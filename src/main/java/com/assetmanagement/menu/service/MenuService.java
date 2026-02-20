@@ -106,7 +106,7 @@ public class MenuService {
         Menu menu = findMenuOrThrow(menuId);
 
         if (menuRepository.existsByParentMenuIdAndIsDeletedFalse(menuId)) {
-            throw new BusinessException(ErrorCode.DEPT_001);
+            throw new BusinessException(ErrorCode.MENU_001);
         }
 
         menu.softDelete(updId);

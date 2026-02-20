@@ -48,6 +48,7 @@ export interface LicenseKeyResponse {
 
 export interface LicenseKeyRequest {
   licenseKey: string;
+  keyStatus?: string;
   remarks?: string;
 }
 

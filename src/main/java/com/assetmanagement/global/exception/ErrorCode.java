@@ -38,6 +38,9 @@ public enum ErrorCode {
     LICENSE_005(HttpStatus.BAD_REQUEST, "LICENSE_005", "INDIVIDUAL 유형인데 키 미지정"),
     LICENSE_006(HttpStatus.CONFLICT, "LICENSE_006", "이미 사용 중인 키"),
 
+    // Menu
+    MENU_001(HttpStatus.BAD_REQUEST, "MENU_001", "하위 메뉴 존재 (삭제 불가)"),
+
     // Common
     COMMON_001(HttpStatus.CONFLICT, "COMMON_001", "분산락 획득 실패 (동시 처리 충돌)"),
     COMMON_002(HttpStatus.BAD_REQUEST, "COMMON_002", "필수 파라미터 누락"),

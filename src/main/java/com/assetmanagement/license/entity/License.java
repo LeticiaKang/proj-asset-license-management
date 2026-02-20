@@ -65,4 +65,11 @@ public class License extends BaseEntity {
     public boolean isExpired() {
         return expiryDate != null && expiryDate.isBefore(LocalDate.now());
     }
+
+    /**
+     * 정책 6.6: 라이센스 삭제는 is_active = false로 비활성화
+     */
+    public void deactivate() {
+        this.isActive = false;
+    }
 }

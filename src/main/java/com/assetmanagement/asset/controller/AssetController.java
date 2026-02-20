@@ -82,4 +82,30 @@ public class AssetController {
     public ApiResponse<List<AssetCategoryResponse>> getCategories() {
         return ApiResponse.ok(assetService.getCategories());
     }
+
+    @Operation(summary = "자산 카테고리 등록")
+    @PostMapping("/categories")
+    @ResponseStatus(HttpStatus.CREATED)
+    public ApiResponse<AssetCategoryResponse> createCategory(
+            @Valid @RequestBody AssetCategoryRequest request) {
+        Long regId = 1L;
+        return ApiResponse.ok(assetService.createCategory(request, regId));
+    }
+
+    @Operation(summary = "자산 카테고리 수정")
+    @PutMapping("/categories/{categoryId}")
+    public ApiResponse<AssetCategoryResponse> updateCategory(
+            @PathVariable Long categoryId,
+            @Valid @RequestBody AssetCategoryRequest request) {
+        Long updId = 1L;
+        return ApiResponse.ok(assetService.updateCategory(categoryId, request, updId));
+    }
+
+    @Operation(summary = "자산 카테고리 삭제")
+    @DeleteMapping("/categories/{categoryId}")
+    public ApiResponse<Void> deleteCategory(@PathVariable Long categoryId) {
+        Long updId = 1L;
+        assetService.deleteCategory(categoryId, updId);
+        return ApiResponse.ok(null, "카테고리가 삭제되었습니다.");
+    }
 }

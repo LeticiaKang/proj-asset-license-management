@@ -73,8 +73,16 @@ export interface AssetTransferRequest {
 export interface AssetCategoryResponse {
   categoryId: number;
   categoryName: string;
+  categoryCode: string;
   parentCategoryId: number | null;
   categoryOrder: number;
+}
+
+export interface AssetCategoryRequest {
+  categoryName: string;
+  categoryCode: string;
+  parentCategoryId?: number | null;
+  categoryOrder?: number;
 }
 
 export interface AssetSummaryResponse {

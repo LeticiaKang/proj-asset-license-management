@@ -9,9 +9,11 @@ import type {
   AssetReturnRequest,
   AssetTransferRequest,
   AssetCategoryResponse,
+  AssetCategoryRequest,
   AssetSummaryResponse,
   AssetHistoryResponse,
 } from '@/types/asset.types';
+import type { MemberAssignmentDetail } from '@/types/member.types';
 
 export const assetApi = {
   search: (params: AssetSearchCondition & PageRequest) =>
@@ -41,6 +43,19 @@ export const assetApi = {
       .get<ApiResponse<AssetCategoryResponse[]>>('/assets/categories')
       .then((r) => r.data.data),
 
+  createCategory: (data: AssetCategoryRequest) =>
+    client
+      .post<ApiResponse<AssetCategoryResponse>>('/assets/categories', data)
+      .then((r) => r.data.data),
+
+  updateCategory: (id: number, data: AssetCategoryRequest) =>
+    client
+      .put<ApiResponse<AssetCategoryResponse>>(`/assets/categories/${id}`, data)
+      .then((r) => r.data.data),
+
+  deleteCategory: (id: number) =>
+    client.delete<ApiResponse<null>>(`/assets/categories/${id}`).then((r) => r.data),
+
   getSummary: () =>
     client
       .get<ApiResponse<AssetSummaryResponse[]>>('/assets/summary')
@@ -67,4 +82,9 @@ export const assetAssignmentApi = {
     client
       .put<ApiResponse<null>>(`/asset-assignments/${assignmentId}/transfer`, data)
       .then((r) => r.data),
+
+  getMemberDetail: (memberId: number) =>
+    client
+      .get<ApiResponse<MemberAssignmentDetail>>(`/asset-assignments/members/${memberId}`)
+      .then((r) => r.data.data),
 };

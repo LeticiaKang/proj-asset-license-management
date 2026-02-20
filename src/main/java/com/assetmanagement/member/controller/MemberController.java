@@ -64,6 +64,16 @@ public class MemberController {
         return ApiResponse.ok(null, "사용자가 비활성화되었습니다.");
     }
 
+    @Operation(summary = "퇴사 처리 (7단계 자동 프로세스)")
+    @PutMapping("/{id}/resign")
+    public ApiResponse<Void> resignMember(
+            @PathVariable Long id,
+            @Valid @RequestBody MemberResignRequest request) {
+        Long updId = 1L;
+        memberService.resignMember(id, request.getResignDate(), updId);
+        return ApiResponse.ok(null, "퇴사 처리가 완료되었습니다.");
+    }
+
     @Operation(summary = "사용자 권한 조회")
     @GetMapping("/{id}/roles")
     public ApiResponse<List<MemberRoleResponse>> getMemberRoles(@PathVariable Long id) {

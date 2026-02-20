@@ -12,6 +12,7 @@ import type {
   LicenseReturnRequest,
   LicenseSummaryResponse,
 } from '@/types/license.types';
+import type { MemberAssignmentDetail } from '@/types/member.types';
 
 export const licenseApi = {
   search: (params: LicenseSearchCondition & PageRequest) =>
@@ -75,5 +76,10 @@ export const licenseAssignmentApi = {
   update: (assignmentId: number, data: LicenseAssignmentRequest) =>
     client
       .put<ApiResponse<LicenseAssignmentResponse>>(`/license-assignments/${assignmentId}`, data)
+      .then((r) => r.data.data),
+
+  getMemberDetail: (memberId: number) =>
+    client
+      .get<ApiResponse<MemberAssignmentDetail>>(`/license-assignments/members/${memberId}`)
       .then((r) => r.data.data),
 };

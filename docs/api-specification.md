@@ -225,6 +225,9 @@
 | GET | `/api/v1/assets/summary` | 자산 유형별 현황 요약 | ALL |
 | GET | `/api/v1/assets/{id}/history` | 자산 배정 이력 조회 | ADMIN, MANAGER |
 | GET | `/api/v1/assets/categories` | 자산 카테고리 목록 | ALL |
+| POST | `/api/v1/assets/categories` | 자산 카테고리 등록 | ADMIN |
+| PUT | `/api/v1/assets/categories/{id}` | 자산 카테고리 수정 | ADMIN |
+| DELETE | `/api/v1/assets/categories/{id}` | 자산 카테고리 삭제 | ADMIN |
 
 ### GET `/api/v1/assets` — 검색 파라미터
 | 파라미터 | 타입 | 설명 |
@@ -465,6 +468,31 @@
 |--------|-----|------|------|
 | GET | `/api/v1/codes` | 코드 그룹 목록 | ALL |
 | GET | `/api/v1/codes/{groupCode}` | 그룹별 코드 목록 | ALL |
+| POST | `/api/v1/codes` | 공통 코드 등록 | ADMIN |
+| PUT | `/api/v1/codes/{id}` | 공통 코드 수정 | ADMIN |
+| DELETE | `/api/v1/codes/{id}` | 공통 코드 삭제 | ADMIN |
+
+### POST `/api/v1/codes`
+- **Request**
+```json
+{
+  "groupCode": "ASSET_STATUS",
+  "code": "REPAIR",
+  "codeName": "수리중",
+  "codeOrder": 3,
+  "description": "수리 진행 중인 자산"
+}
+```
+
+### POST `/api/v1/assets/categories`
+- **Request**
+```json
+{
+  "categoryName": "데스크톱",
+  "parentCategoryId": null,
+  "categoryOrder": 1
+}
+```
 
 ---
 

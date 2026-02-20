@@ -49,15 +49,20 @@ export const ACTION_TYPE_LABEL: Record<string, string> = {
 export const ROUTES = {
   LOGIN: '/login',
   CHANGE_PASSWORD: '/change-password',
+  DASHBOARD: '/dashboard',
+  MENUS: '/menus',
+  ROLES: '/roles',
+  COMMON_CODES: '/common-codes',
+  DEPARTMENTS: '/departments',
+  MEMBERS: '/members',
+  ASSET_CATEGORIES: '/assets/categories',
   ASSETS: '/assets',
   ASSET_DETAIL: '/assets/:id',
   ASSET_ASSIGNMENTS: '/asset-assignments',
+  SOFTWARES: '/softwares',
   LICENSES: '/licenses',
   LICENSE_DETAIL: '/licenses/:id',
   LICENSE_ASSIGNMENTS: '/license-assignments',
-  MEMBERS: '/members',
-  DEPARTMENTS: '/departments',
-  MENUS: '/menus',
 } as const;
 
 // ── 페이징 ──
@@ -66,12 +71,17 @@ export const MAX_PAGE_SIZE = 100;
 
 // ── 브레드크럼 매핑 ──
 export const BREADCRUMB_MAP: Record<string, string> = {
+  '/dashboard': '대시보드',
+  '/menus': '메뉴 관리',
+  '/roles': '권한 관리',
+  '/common-codes': '공통코드 관리',
+  '/departments': '부서 관리',
+  '/members': '사용자 관리',
+  '/assets/categories': '자산 유형 관리',
   '/assets': '자산 목록',
   '/asset-assignments': '자산 배정',
+  '/softwares': '소프트웨어 관리',
   '/licenses': '라이센스 목록',
   '/license-assignments': '라이센스 배정',
-  '/members': '사용자 관리',
-  '/departments': '부서 관리',
-  '/menus': '메뉴 관리',
   '/change-password': '비밀번호 변경',
 };

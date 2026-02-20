@@ -7,8 +7,23 @@ import { useAuthStore } from '@/store/authStore';
 import AppLayout from '@/components/layout/AppLayout';
 import PermissionRoute from '@/routes/PermissionRoute';
 import LoginPage from '@/pages/auth/LoginPage';
+import ChangePasswordPage from '@/pages/auth/ChangePasswordPage';
 import ForbiddenPage from '@/pages/error/ForbiddenPage';
 import NotFoundPage from '@/pages/error/NotFoundPage';
+import DashboardPage from '@/pages/dashboard/DashboardPage';
+import MenuManagePage from '@/pages/menu/MenuManagePage';
+import RoleManagePage from '@/pages/role/RoleManagePage';
+import CommonCodeManagePage from '@/pages/commoncode/CommonCodeManagePage';
+import DeptManagePage from '@/pages/dept/DeptManagePage';
+import MemberManagePage from '@/pages/member/MemberManagePage';
+import AssetCategoryPage from '@/pages/asset/AssetCategoryPage';
+import AssetListPage from '@/pages/asset/AssetListPage';
+import AssetDetailPage from '@/pages/asset/AssetDetailPage';
+import AssetAssignPage from '@/pages/asset/AssetAssignPage';
+import SoftwareManagePage from '@/pages/license/SoftwareManagePage';
+import LicenseListPage from '@/pages/license/LicenseListPage';
+import LicenseDetailPage from '@/pages/license/LicenseDetailPage';
+import LicenseAssignPage from '@/pages/license/LicenseAssignPage';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -38,14 +53,6 @@ const GuestRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   return <>{children}</>;
 };
 
-// 페이지 placeholder (추후 /generate-page로 구현)
-const PlaceholderPage: React.FC<{ title: string }> = ({ title }) => (
-  <div>
-    <h2>{title}</h2>
-    <p>페이지 구현 예정</p>
-  </div>
-);
-
 const App: React.FC = () => {
   return (
     <QueryClientProvider client={queryClient}>
@@ -72,20 +79,72 @@ const App: React.FC = () => {
                   </ProtectedRoute>
                 }
               >
-                <Route index element={<Navigate to="/assets" replace />} />
+                <Route index element={<Navigate to="/dashboard" replace />} />
 
                 {/* 권한 불필요 (인증만) */}
+                <Route path="change-password" element={<ChangePasswordPage />} />
+
+                {/* 대시보드 */}
+                <Route path="dashboard" element={<DashboardPage />} />
+
+                {/* 시스템 관리 */}
                 <Route
-                  path="change-password"
-                  element={<PlaceholderPage title="비밀번호 변경" />}
+                  path="menus"
+                  element={
+                    <PermissionRoute requiredMenu="/menus">
+                      <MenuManagePage />
+                    </PermissionRoute>
+                  }
+                />
+                <Route
+                  path="roles"
+                  element={
+                    <PermissionRoute requiredMenu="/roles">
+                      <RoleManagePage />
+                    </PermissionRoute>
+                  }
+                />
+                <Route
+                  path="common-codes"
+                  element={
+                    <PermissionRoute requiredMenu="/common-codes">
+                      <CommonCodeManagePage />
+                    </PermissionRoute>
+                  }
+                />
+
+                {/* 조직 관리 */}
+                <Route
+                  path="departments"
+                  element={
+                    <PermissionRoute requiredMenu="/departments">
+                      <DeptManagePage />
+                    </PermissionRoute>
+                  }
+                />
+                <Route
+                  path="members"
+                  element={
+                    <PermissionRoute requiredMenu="/members">
+                      <MemberManagePage />
+                    </PermissionRoute>
+                  }
                 />
 
                 {/* 자산 관리 */}
                 <Route
+                  path="assets/categories"
+                  element={
+                    <PermissionRoute requiredMenu="/assets/categories">
+                      <AssetCategoryPage />
+                    </PermissionRoute>
+                  }
+                />
+                <Route
                   path="assets"
                   element={
                     <PermissionRoute requiredMenu="/assets">
-                      <PlaceholderPage title="자산 목록" />
+                      <AssetListPage />
                     </PermissionRoute>
                   }
                 />
@@ -93,7 +152,7 @@ const App: React.FC = () => {
                   path="assets/:id"
                   element={
                     <PermissionRoute requiredMenu="/assets">
-                      <PlaceholderPage title="자산 상세" />
+                      <AssetDetailPage />
                     </PermissionRoute>
                   }
                 />
@@ -101,17 +160,25 @@ const App: React.FC = () => {
                   path="asset-assignments"
                   element={
                     <PermissionRoute requiredMenu="/asset-assignments">
-                      <PlaceholderPage title="자산 배정" />
+                      <AssetAssignPage />
                     </PermissionRoute>
                   }
                 />
 
                 {/* 라이센스 관리 */}
                 <Route
+                  path="softwares"
+                  element={
+                    <PermissionRoute requiredMenu="/softwares">
+                      <SoftwareManagePage />
+                    </PermissionRoute>
+                  }
+                />
+                <Route
                   path="licenses"
                   element={
                     <PermissionRoute requiredMenu="/licenses">
-                      <PlaceholderPage title="라이센스 목록" />
+                      <LicenseListPage />
                     </PermissionRoute>
                   }
                 />
@@ -119,7 +186,7 @@ const App: React.FC = () => {
                   path="licenses/:id"
                   element={
                     <PermissionRoute requiredMenu="/licenses">
-                      <PlaceholderPage title="라이센스 상세" />
+                      <LicenseDetailPage />
                     </PermissionRoute>
                   }
                 />
@@ -127,33 +194,7 @@ const App: React.FC = () => {
                   path="license-assignments"
                   element={
                     <PermissionRoute requiredMenu="/license-assignments">
-                      <PlaceholderPage title="라이센스 배정" />
-                    </PermissionRoute>
-                  }
-                />
-
-                {/* 사용자/부서/메뉴 관리 */}
-                <Route
-                  path="members"
-                  element={
-                    <PermissionRoute requiredMenu="/members">
-                      <PlaceholderPage title="사용자 관리" />
-                    </PermissionRoute>
-                  }
-                />
-                <Route
-                  path="departments"
-                  element={
-                    <PermissionRoute requiredMenu="/departments">
-                      <PlaceholderPage title="부서 관리" />
-                    </PermissionRoute>
-                  }
-                />
-                <Route
-                  path="menus"
-                  element={
-                    <PermissionRoute requiredMenu="/menus">
-                      <PlaceholderPage title="메뉴 관리" />
+                      <LicenseAssignPage />
                     </PermissionRoute>
                   }
                 />

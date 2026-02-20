@@ -161,7 +161,11 @@ public class MemberService {
             .orElseThrow(() -> new BusinessException(ErrorCode.COMMON_003));
 
         // Step 1 & 2: resign_date 기록 + employment_status → RESIGNED
-        member.resign(resignDate);
+        try {
+            member.resign(resignDate);
+        } catch (IllegalStateException e) {
+            throw new BusinessException(ErrorCode.USER_002);
+        }
         member.setUpdId(updId);
 
         // Step 3 & 5: 배정된 모든 자산 자동 반납 + 이력 기록

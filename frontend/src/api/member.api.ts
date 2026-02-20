@@ -5,6 +5,8 @@ import type {
   MemberRequest,
   MemberSearchCondition,
   MemberAssignmentDetail,
+  MemberRoleResponse,
+  MemberRoleRequest,
 } from '@/types/member.types';
 
 export const memberApi = {
@@ -31,5 +33,15 @@ export const memberApi = {
   getAssignmentDetail: (memberId: number) =>
     client
       .get<ApiResponse<MemberAssignmentDetail>>(`/asset-assignments/members/${memberId}`)
+      .then((r) => r.data.data),
+
+  getRoles: (memberId: number) =>
+    client
+      .get<ApiResponse<MemberRoleResponse[]>>(`/members/${memberId}/roles`)
+      .then((r) => r.data.data),
+
+  updateRoles: (memberId: number, data: MemberRoleRequest) =>
+    client
+      .put<ApiResponse<MemberRoleResponse[]>>(`/members/${memberId}/roles`, data)
       .then((r) => r.data.data),
 };

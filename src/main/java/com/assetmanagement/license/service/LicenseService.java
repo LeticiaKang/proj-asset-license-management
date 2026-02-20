@@ -98,7 +98,9 @@ public class LicenseService {
             throw new BusinessException(ErrorCode.LICENSE_004);
         }
 
-        license.softDelete(updId);
+        // 정책 6.6: 라이센스 삭제는 is_active = false로 비활성화
+        license.deactivate();
+        license.setUpdId(updId);
     }
 
     public List<LicenseKeyResponse> getLicenseKeys(Long licenseId) {
