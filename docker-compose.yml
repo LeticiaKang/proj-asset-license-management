@@ -1,0 +1,86 @@
+version: "3.8"
+
+services:
+  # ── PostgreSQL 15 ──
+  postgres:
+    image: postgres:15-alpine
+    container_name: asset-mgmt-postgres
+    ports:
+      - "${DB_PORT:-5432}:5432"
+    environment:
+      POSTGRES_DB: ${DB_NAME:-asset_management}
+      POSTGRES_USER: ${DB_USER:-admin}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-admin1234}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./docs/ddl_v1.3.sql:/docker-entrypoint-initdb.d/01-schema.sql
+      - ./docker/db/02-seed.sql:/docker-entrypoint-initdb.d/02-seed.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-admin} -d ${DB_NAME:-asset_management}"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    restart: unless-stopped
+
+  # ── Redis 7 ──
+  redis:
+    image: redis:7-alpine
+    container_name: asset-mgmt-redis
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    restart: unless-stopped
+
+  # ── Spring Boot Backend ──
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: asset-mgmt-backend
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_PROFILES_ACTIVE: local
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: ${DB_NAME:-asset_management}
+      DB_USER: ${DB_USER:-admin}
+      DB_PASSWORD: ${DB_PASSWORD:-admin1234}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      JWT_SECRET: ${JWT_SECRET:-ThisIsAVeryLongSecretKeyForJwtTokenGenerationAtLeast256BitsRequired!!}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8080/actuator/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 40s
+    restart: unless-stopped
+
+  # ── React Frontend (nginx) ──
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: asset-mgmt-frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  redis_data:

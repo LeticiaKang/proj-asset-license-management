@@ -1,0 +1,15 @@
+.git
+.github
+.idea
+.vscode
+.gradle
+build
+frontend
+docker
+docs
+*.md
+!README.md
+.env
+*.log
+logs
+node_modules

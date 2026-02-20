@@ -1,0 +1,233 @@
+erDiagram
+    %% ============================================
+    %% IT 자산 & 라이센스 관리 시스템 ERD (v1.3)
+    %% ============================================
+
+    menu ||--o{ menu : "parent"
+    menu ||--o{ role_menu : "has"
+    role ||--o{ role_menu : "has"
+    role ||--o{ member_role : "has"
+
+    dept ||--o{ dept : "parent"
+    dept ||--o{ member : "belongs_to"
+
+    member ||--o{ member_role : "has"
+    member ||--o{ password_history : "has"
+    member ||--o{ asset_assignment : "assigned_to"
+    member ||--o{ asset_history : "history"
+    member ||--o{ license_assignment : "assigned_to"
+    member ||--o{ license_history : "history"
+
+    asset_category ||--o{ asset_category : "parent"
+    asset_category ||--o{ asset : "categorized"
+
+    asset ||--o{ asset_assignment : "assigned"
+    asset ||--o{ asset_history : "history"
+
+    software ||--o{ license : "has"
+    license ||--o{ license_key : "has_keys"
+    license ||--o{ license_assignment : "assigned"
+    license ||--o{ license_history : "history"
+
+    license_key ||--o{ license_assignment : "assigned_key"
+    license_key ||--o{ license_history : "history_key"
+
+    menu {
+        bigserial menu_id PK
+        bigint parent_menu_id FK
+        varchar menu_name
+        varchar menu_code UK
+        varchar menu_url
+        varchar menu_icon
+        int menu_order
+        int menu_depth
+        boolean is_active
+        boolean is_deleted
+    }
+
+    role {
+        bigserial role_id PK
+        varchar role_name UK
+        varchar role_code UK
+        varchar description
+        boolean is_active
+        boolean is_deleted
+    }
+
+    role_menu {
+        bigserial role_menu_id PK
+        bigint role_id FK
+        bigint menu_id FK
+        boolean can_read
+        boolean can_create
+        boolean can_update
+        boolean can_delete
+        boolean is_deleted
+    }
+
+    dept {
+        bigserial dept_id PK
+        bigint parent_dept_id FK
+        varchar dept_name
+        varchar dept_code UK
+        int dept_order
+        int dept_depth
+        varchar dept_path
+        boolean is_active
+        boolean is_deleted
+    }
+
+    member {
+        bigserial member_id PK
+        varchar login_id UK
+        varchar password
+        varchar member_name
+        bigint dept_id FK
+        varchar position
+        varchar job_title
+        date hire_date
+        date resign_date
+        varchar employment_status
+        varchar work_location
+        varchar email
+        varchar phone
+        int login_fail_count
+        boolean is_locked
+        boolean is_initial_password
+        boolean is_active
+        boolean is_deleted
+    }
+
+    password_history {
+        bigserial history_id PK
+        bigint member_id FK
+        varchar password
+        timestamp reg_date
+    }
+
+    member_role {
+        bigserial member_role_id PK
+        bigint member_id FK
+        bigint role_id FK
+        boolean is_deleted
+    }
+
+    asset_category {
+        bigserial category_id PK
+        varchar category_name
+        varchar category_code UK
+        bigint parent_category_id FK
+        int category_order
+        boolean is_active
+        boolean is_deleted
+    }
+
+    asset {
+        bigserial asset_id PK
+        bigint category_id FK
+        varchar asset_name
+        varchar manufacturer
+        varchar model_name
+        varchar serial_number UK
+        date purchase_date
+        numeric purchase_price
+        date warranty_start_date
+        date warranty_end_date
+        varchar asset_status
+        varchar memory
+        varchar storage
+        jsonb specs
+        text remarks
+        boolean is_deleted
+    }
+
+    asset_assignment {
+        bigserial assignment_id PK
+        bigint asset_id FK
+        bigint member_id FK
+        date assigned_date
+        date return_date
+        varchar assignment_status
+        text remarks
+        boolean is_deleted
+    }
+
+    asset_history {
+        bigserial history_id PK
+        bigint asset_id FK
+        bigint member_id FK
+        varchar action_type
+        timestamp action_date
+        text remarks
+        bigint reg_id
+        timestamp reg_date
+    }
+
+    software {
+        bigserial software_id PK
+        varchar software_name
+        varchar publisher
+        text description
+        boolean is_active
+        boolean is_deleted
+    }
+
+    license {
+        bigserial license_id PK
+        bigint software_id FK
+        varchar license_type
+        varchar license_version
+        int total_qty
+        int used_qty
+        date purchase_date
+        date expiry_date
+        numeric purchase_price
+        text install_guide
+        text remarks
+        boolean is_active
+        boolean is_deleted
+    }
+
+    license_key {
+        bigserial key_id PK
+        bigint license_id FK
+        varchar license_key
+        varchar key_status
+        text remarks
+        boolean is_deleted
+    }
+
+    license_assignment {
+        bigserial assignment_id PK
+        bigint license_id FK
+        bigint key_id FK
+        bigint member_id FK
+        date assigned_date
+        date return_date
+        text assignment_reason
+        varchar assignment_status
+        boolean is_deleted
+    }
+
+    license_history {
+        bigserial history_id PK
+        bigint license_id FK
+        bigint key_id FK
+        bigint member_id FK
+        varchar action_type
+        timestamp action_date
+        text assignment_reason
+        text remarks
+        bigint reg_id
+        timestamp reg_date
+    }
+
+    common_code {
+        bigserial code_id PK
+        varchar group_code
+        varchar code
+        varchar code_name
+        int code_order
+        boolean is_active
+        boolean is_deleted
+    }

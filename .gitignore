@@ -1,0 +1,33 @@
+# Gradle
+.gradle/
+build/
+!gradle/wrapper/gradle-wrapper.jar
+
+# IDE
+.idea/
+*.iml
+.vscode/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Environment
+.env
+
+# Java
+*.class
+*.jar
+*.war
+
+# Logs
+*.log
+logs/
+
+
+.claude/
+
+# frontend
+frontend/node_modules/
+frontend/dist/

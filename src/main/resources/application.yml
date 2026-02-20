@@ -1,0 +1,45 @@
+spring:
+  profiles:
+    active: local
+
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        format_sql: true
+        default_batch_fetch_size: 100
+
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+
+jwt:
+  secret: ${JWT_SECRET:ThisIsAVeryLongSecretKeyForJwtTokenGenerationAtLeast256BitsRequired!!}
+  access-token-validity: 3600000    # 1시간 (ms)
+  refresh-token-validity: 86400000  # 24시간 (ms)
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    tags-sorter: alpha
+    operations-sorter: alpha
+  api-docs:
+    path: /v3/api-docs
+
+server:
+  servlet:
+    encoding:
+      charset: UTF-8
+      force: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      show-details: never
