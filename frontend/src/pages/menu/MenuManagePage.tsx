@@ -1,93 +1,70 @@
 import React, { useState, useMemo } from 'react';
-import { Button, Form, Input, InputNumber, Select, Space, Tag, Popconfirm } from 'antd';
-import { PlusOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { App } from 'antd';
+import { Button, Tag } from 'antd';
+import { DownOutlined, PlusOutlined, RightOutlined } from '@ant-design/icons';
+import { useQuery } from '@tanstack/react-query';
 import type { ColumnsType } from 'antd/es/table';
 import SearchTable from '@/components/table/SearchTable';
-import FormModal from '@/components/form/FormModal';
 import { menuApi } from '@/api/menu.api';
 import { usePermission } from '@/hooks/usePermission';
-import type { MenuResponse, MenuRequest } from '@/types/menu.types';
+import type { MenuResponse } from '@/types/menu.types';
+import MenuFormModal from '@/components/menu/MenuFormModal';
+import MenuActionButtons from '@/components/menu/MenuActionButtons';
+
+// Helper function can be moved to a utils file
+const flattenMenus = (items: MenuResponse[], depth = 0): { label: string; value: number }[] => {
+  const result: { label: string; value: number }[] = [];
+  items.forEach((item) => {
+    result.push({ label: `${'ㄴ'.repeat(depth)} ${item.menuName}`.trim(), value: item.menuId });
+    if (item.children?.length) {
+      result.push(...flattenMenus(item.children, depth + 1));
+    }
+  });
+  return result;
+};
 
 const MenuManagePage: React.FC = () => {
-  const { message } = App.useApp();
-  const queryClient = useQueryClient();
   const { hasPermission } = usePermission();
-  const [form] = Form.useForm<MenuRequest>();
-  const [modalOpen, setModalOpen] = useState(false);
-  const [editingId, setEditingId] = useState<number | null>(null);
+  const [modalOpen, setModalOpen] = useState(false); // 모달 상태 관리
 
+  // editingId가 null이면 새 메뉴 등록, 그렇지 않으면 해당 ID의 메뉴 수정
+  const [activeMenu, setActiveMenu] = useState<{
+    editingId: number | null;
+    parentMenuId?: number;
+  }>({ editingId: null }); // 모달 열 때, 메뉴아이디 전달
+
+  /* useQuery : API */
   const { data: menus = [], isLoading } = useQuery({
     queryKey: ['menus'],
     queryFn: menuApi.getTree,
   });
 
-  const saveMutation = useMutation({
-    mutationFn: (values: MenuRequest) =>
-      editingId ? menuApi.update(editingId, values) : menuApi.create(values),
-    onSuccess: () => {
-      message.success(editingId ? '수정되었습니다.' : '등록되었습니다.');
-      queryClient.invalidateQueries({ queryKey: ['menus'] });
-      setModalOpen(false);
-    },
-  });
-
-  const deleteMutation = useMutation({
-    mutationFn: menuApi.delete,
-    onSuccess: () => {
-      message.success('삭제되었습니다.');
-      queryClient.invalidateQueries({ queryKey: ['menus'] });
-    },
-  });
-
-  const flattenMenus = (items: MenuResponse[], depth = 0): { label: string; value: number }[] => {
-    const result: { label: string; value: number }[] = [];
-    items.forEach((item) => {
-      result.push({ label: `${'ㄴ'.repeat(depth)} ${item.menuName}`.trim(), value: item.menuId });
-      if (item.children?.length) {
-        result.push(...flattenMenus(item.children, depth + 1));
-      }
-    });
-    return result;
-  };
-
+  /* UseMemo */ 
+  // 데이터 가공 / 데이터가 변경될 때만 작업 수행
   const parentOptions = useMemo(() => flattenMenus(menus), [menus]);
 
-  const openCreateModal = (parentMenuId?: number) => {
-    setEditingId(null);
-    form.resetFields();
-    if (parentMenuId) {
-      form.setFieldsValue({ parentMenuId });
-    }
+  /* Functions */
+
+  // [등록] / [추가] 버튼 이벤트 함수
+  const handleOpenModalForCreate = (parentMenuId?: number) => {
+    setActiveMenu({ editingId: null, parentMenuId });
     setModalOpen(true);
   };
 
-  const openEditModal = (record: MenuResponse) => {
-    setEditingId(record.menuId);
-    form.setFieldsValue({
-      parentMenuId: record.parentMenuId,
-      menuName: record.menuName,
-      menuCode: record.menuCode,
-      menuUrl: record.menuUrl ?? undefined,
-      menuIcon: record.menuIcon ?? undefined,
-      menuOrder: record.menuOrder,
-      description: record.description ?? undefined,
-    });
+  // [수정] 버튼 이벤트 함수
+  const handleOpenModalForEdit = (record: MenuResponse) => {
+    setActiveMenu({ editingId: record.menuId }); //activeMenu상태 수정으로 업데이트
     setModalOpen(true);
   };
 
-  const handleSave = async () => {
-    const values = await form.validateFields();
-    saveMutation.mutate(values);
+  // 모달 닫는 함수 (공통)
+  const handleCloseModal = () => {
+    setModalOpen(false);
   };
 
   const columns: ColumnsType<MenuResponse> = [
-    { title: '메뉴명', dataIndex: 'menuName', key: 'menuName' },
-    { title: '메뉴코드', dataIndex: 'menuCode', key: 'menuCode', width: 150 },
-    { title: 'URL', dataIndex: 'menuUrl', key: 'menuUrl', width: 180 },
-    { title: '아이콘', dataIndex: 'menuIcon', key: 'menuIcon', width: 120 },
-    { title: '순서', dataIndex: 'menuOrder', key: 'menuOrder', width: 80, align: 'center' },
+    { title: '메뉴명', dataIndex: 'menuName', key: 'menuName', width: 150 },
+    { title: '메뉴코드', dataIndex: 'menuCode', key: 'menuCode', width: 150, align: 'center' },
+    { title: 'URL', dataIndex: 'menuUrl', key: 'menuUrl', width: 180, align: 'center' },
     {
       title: '상태',
       dataIndex: 'isActive',
@@ -101,21 +78,12 @@ const MenuManagePage: React.FC = () => {
       key: 'actions',
       width: 200,
       render: (_, record) => (
-        <Space size="small">
-          {hasPermission('/menus', 'CREATE') && (
-            <Button size="small" onClick={() => openCreateModal(record.menuId)}>
-              하위 추가
-            </Button>
-          )}
-          {hasPermission('/menus', 'UPDATE') && (
-            <Button size="small" icon={<EditOutlined />} onClick={() => openEditModal(record)} />
-          )}
-          {hasPermission('/menus', 'DELETE') && (
-            <Popconfirm title="삭제하시겠습니까?" onConfirm={() => deleteMutation.mutate(record.menuId)}>
-              <Button size="small" danger icon={<DeleteOutlined />} />
-            </Popconfirm>
-          )}
-        </Space>
+        // 각 행의 관리열 버튼 컴포넌트
+        <MenuActionButtons
+          record={record}
+          onAddChild={handleOpenModalForCreate}
+          onEdit={handleOpenModalForEdit}
+        />
       ),
     },
   ];
@@ -126,7 +94,7 @@ const MenuManagePage: React.FC = () => {
         cardTitle="메뉴 관리"
         extra={
           hasPermission('/menus', 'CREATE') && (
-            <Button type="primary" icon={<PlusOutlined />} onClick={() => openCreateModal()}>
+            <Button type="primary" icon={<PlusOutlined />} onClick={() => handleOpenModalForCreate()}>
               등록
             </Button>
           )
@@ -136,39 +104,34 @@ const MenuManagePage: React.FC = () => {
         rowKey="menuId"
         loading={isLoading}
         pagination={false}
-        expandable={{ childrenColumnName: 'children' }}
+        expandable={{
+          childrenColumnName: 'children',
+          expandIcon: ({ expanded, onExpand, record }) => {
+            //_ record.children이 존재하고, 비어있지 않은 배열인 경우 (하위 메뉴가 있는 경우)
+            if (record.children && record.children.length > 0) {
+              // expanded 상태에 따라 열림/닫힘 아이콘을 보여줍니다.
+              return expanded ? (
+                <DownOutlined onClick={e => onExpand(record, e)} style={{ marginRight: 8 }} />
+              ) : (
+                <RightOutlined onClick={e => onExpand(record, e)} style={{ marginRight: 8 }} />
+              );
+            } else {
+              // 하위 메뉴가 없는 경우, • 기호
+              return <span style={{ marginRight: 23, marginLeft: 5 }}>●</span>;
+            }
+          }
+        }}
       />
 
-      <FormModal
-        title={editingId ? '메뉴 수정' : '메뉴 등록'}
-        open={modalOpen}
-        onCancel={() => setModalOpen(false)}
-        onOk={handleSave}
-        confirmLoading={saveMutation.isPending}
-        form={form}
-      >
-        <Form.Item name="parentMenuId" label="상위 메뉴">
-          <Select allowClear placeholder="최상위 메뉴" options={parentOptions} />
-        </Form.Item>
-        <Form.Item name="menuName" label="메뉴명" rules={[{ required: true, message: '메뉴명을 입력하세요.' }]}>
-          <Input />
-        </Form.Item>
-        <Form.Item name="menuCode" label="메뉴코드" rules={[{ required: true, message: '메뉴코드를 입력하세요.' }]}>
-          <Input disabled={!!editingId} />
-        </Form.Item>
-        <Form.Item name="menuUrl" label="URL">
-          <Input placeholder="/example" />
-        </Form.Item>
-        <Form.Item name="menuIcon" label="아이콘">
-          <Input placeholder="AppstoreOutlined" />
-        </Form.Item>
-        <Form.Item name="menuOrder" label="정렬순서" initialValue={0}>
-          <InputNumber min={0} style={{ width: '100%' }} />
-        </Form.Item>
-        <Form.Item name="description" label="설명">
-          <Input.TextArea rows={2} />
-        </Form.Item>
-      </FormModal>
+      {modalOpen && (
+        <MenuFormModal
+          open={modalOpen}
+          onClose={handleCloseModal}
+          editingId={activeMenu.editingId}
+          parentMenuId={activeMenu.parentMenuId}
+          parentOptions={parentOptions}
+        />
+      )}
     </>
   );
 };

@@ -8,7 +8,6 @@ import com.assetmanagement.license.entity.LicenseKey;
 import com.assetmanagement.license.repository.LicenseKeyRepository;
 import com.assetmanagement.license.repository.LicenseRepository;
 import com.assetmanagement.license.repository.LicenseSpecification;
-import com.assetmanagement.license.repository.LicenseSummaryProjection;
 import com.assetmanagement.software.entity.Software;
 import com.assetmanagement.software.repository.SoftwareRepository;
 import lombok.RequiredArgsConstructor;
@@ -145,13 +144,8 @@ public class LicenseService {
     }
 
     public List<LicenseSummaryResponse> getLicenseSummary() {
-        return licenseRepository.getLicenseSummary().stream()
-            .map(p -> new LicenseSummaryResponse(
-                p.getSoftwareid(), p.getSoftwarename(),
-                p.getLicenseid(), p.getLicensetype(), p.getLicenseversion(),
-                p.getTotalqty(), p.getUsedqty(), p.getRemainqty(),
-                p.getExpirydate(), p.getExpirystatus()
-            ))
+        return licenseRepository.findAllActiveLicenses().stream()
+            .map(LicenseSummaryResponse::from)
             .toList();
     }
 

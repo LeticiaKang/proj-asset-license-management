@@ -16,7 +16,7 @@ public interface AssetRepository extends JpaRepository<Asset, Long>, JpaSpecific
     boolean existsBySerialNumber(String serialNumber);
 
     @Query("""
-        SELECT new com.assetmanagement.asset.dto.AssetSummaryResponse(
+        SELECT (
             ac.categoryId, ac.categoryName, ac.categoryCode,
             COUNT(a.assetId),
             COUNT(CASE WHEN a.assetStatus = 'AVAILABLE' THEN 1 END),

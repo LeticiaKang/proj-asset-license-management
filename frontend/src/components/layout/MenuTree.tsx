@@ -52,7 +52,7 @@ const MenuTree: React.FC = () => {
     if (openKeys.length > 0) return openKeys;
     for (const route of routeConfig) {
       if (route.children?.some((c) => c.path === location.pathname)) {
-        return [route.path];
+        return [`sub:${route.path}`];
       }
     }
     return [];
@@ -93,7 +93,7 @@ function buildMenuFromConfig(
       if (visibleChildren.length === 0) continue;
 
       items.push({
-        key: route.path,
+        key: `sub:${route.path}`,
         icon: route.icon,
         label: route.label,
         children: visibleChildren.map((child) => ({

@@ -5,6 +5,7 @@ import { useMenuStore } from '@/store/menuStore';
 import { BREADCRUMB_MAP } from '@/utils/constants';
 import HeaderBar from './HeaderBar';
 import MenuTree from './MenuTree';
+import FooterBar from './FooterBar';
 
 const { Sider, Content } = Layout;
 
@@ -27,6 +28,7 @@ const AppLayout: React.FC = () => {
 
   return (
     <Layout style={{ minHeight: '100vh' }}>
+      {/* 왼쪽 사이드 메뉴 영역 */}
       <Sider
         trigger={null}
         collapsible
@@ -50,6 +52,7 @@ const AppLayout: React.FC = () => {
         <MenuTree />
       </Sider>
       <Layout>
+        {/* 메인 콘텐츠 영역 (헤더 + 내용) */} 
         <HeaderBar />
         <Content style={{ margin: 24 }}>
           {pathSegments.length > 0 && (
@@ -66,6 +69,7 @@ const AppLayout: React.FC = () => {
             <Outlet />
           </div>
         </Content>
+        <FooterBar />
       </Layout>
     </Layout>
   );

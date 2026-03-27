@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button, Form, Input, InputNumber, Select, Space, Tag, Popconfirm } from 'antd';
-import { PlusOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
+import { PlusOutlined, EditOutlined, DeleteOutlined, MinusCircleOutlined } from '@ant-design/icons';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { App } from 'antd';
@@ -11,7 +11,17 @@ import { assetApi } from '@/api/asset.api';
 import { usePagination } from '@/hooks/usePagination';
 import { usePermission } from '@/hooks/usePermission';
 import { STATUS_COLOR, STATUS_LABEL } from '@/utils/constants';
-import type { AssetResponse, AssetRequest, AssetSearchCondition, AssetCategoryResponse } from '@/types/asset.types';
+import type {
+  AssetResponse,
+  AssetRequest,
+  AssetSearchCondition,
+  AssetCategoryResponse,
+  Page,
+} from '@/types/asset.types';
+
+interface AssetFormValues extends AssetRequest {
+  specEntries?: { key: string; value: string }[];
+}
 
 const AssetListPage: React.FC = () => {
   const { message } = App.useApp();
@@ -19,16 +29,32 @@ const AssetListPage: React.FC = () => {
   const queryClient = useQueryClient();
   const { hasPermission } = usePermission();
   const { page, size, current, onPageChange, resetPage } = usePagination();
-  const [form] = Form.useForm<AssetRequest>();
+  const [form] = Form.useForm<AssetFormValues>();
   const [searchForm] = Form.useForm();
   const [modalOpen, setModalOpen] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [search, setSearch] = useState<AssetSearchCondition>({});
 
-  const { data, isLoading } = useQuery({
-    queryKey: ['assets', page, size, search],
-    queryFn: () => assetApi.search({ ...search, page, size }),
-  });
+  // react-query의 useQuery를 useEffect와 useState로 직접 구현
+  const [assetData, setAssetData] = useState<Page<AssetResponse> | null>(null);
+  const [isAssetLoading, setIsAssetLoading] = useState(false);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      setIsAssetLoading(true);
+      try {
+        const response = await assetApi.search({ ...search, page, size });
+        setAssetData(response);
+      } catch (error) {
+        console.error('데이터 조회 실패:', error);
+        message.error('데이터를 불러오는 중 오류가 발생했습니다.');
+      } finally {
+        setIsAssetLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [page, size, search, message]); // 의존성 배열에 page, size, search 추가
 
   const { data: categories = [] } = useQuery({
     queryKey: ['assetCategories'],
@@ -53,7 +79,9 @@ const AssetListPage: React.FC = () => {
       editingId ? assetApi.update(editingId, values) : assetApi.create(values),
     onSuccess: () => {
       message.success(editingId ? '수정되었습니다.' : '등록되었습니다.');
-      queryClient.invalidateQueries({ queryKey: ['assets'] });
+      // 데이터 재조회를 위해 queryKey를 사용하는 대신, 다시 fetch하는 함수를 호출하거나 상태를 직접 업데이트 해야함
+      // 여기서는 간단하게 하기 위해 목록 새로고침은 생략 (또는 queryClient.invalidateQueries 사용 유지)
+      queryClient.invalidateQueries({ queryKey: ['assets'] }); // 이 부분은 useQuery와 함께 쓰일 때 의미가 있음
       setModalOpen(false);
     },
   });
@@ -62,7 +90,7 @@ const AssetListPage: React.FC = () => {
     mutationFn: assetApi.delete,
     onSuccess: () => {
       message.success('삭제되었습니다.');
-      queryClient.invalidateQueries({ queryKey: ['assets'] });
+      queryClient.invalidateQueries({ queryKey: ['assets'] }); // 마찬가지
     },
   });
 
@@ -75,6 +103,10 @@ const AssetListPage: React.FC = () => {
   const openEditModal = async (id: number) => {
     const detail = await assetApi.getById(id);
     setEditingId(id);
+    // specs 객체를 specEntries 배열로 변환
+    const specEntries = detail.specs
+      ? Object.entries(detail.specs).map(([key, value]) => ({ key, value: String(value) }))
+      : [];
     form.setFieldsValue({
       categoryId: detail.categoryId,
       assetName: detail.assetName,
@@ -87,6 +119,7 @@ const AssetListPage: React.FC = () => {
       warrantyEndDate: detail.warrantyEndDate ?? undefined,
       memory: detail.memory,
       storage: detail.storage,
+      specEntries,
       remarks: detail.remarks,
     });
     setModalOpen(true);
@@ -94,7 +127,13 @@ const AssetListPage: React.FC = () => {
 
   const handleSave = async () => {
     const values = await form.validateFields();
-    saveMutation.mutate(values);
+    // specEntries -> specs 객체로 변환
+    const { specEntries, ...rest } = values;
+    const specs: Record<string, string> = {};
+    (specEntries ?? []).forEach((entry) => {
+      if (entry?.key) specs[entry.key] = entry.value ?? '';
+    });
+    saveMutation.mutate({ ...rest, specs });
   };
 
   const handleSearch = () => {
@@ -180,10 +219,10 @@ const AssetListPage: React.FC = () => {
         }
         searchForm={searchFormNode}
         columns={columns}
-        dataSource={data?.content}
+        dataSource={assetData?.content}
         rowKey="assetId"
-        loading={isLoading}
-        total={data?.totalElements}
+        loading={isAssetLoading}
+        total={assetData?.totalElements}
         current={current}
         pageSize={size}
         onPageChange={onPageChange}
@@ -230,6 +269,28 @@ const AssetListPage: React.FC = () => {
         </Form.Item>
         <Form.Item name="storage" label="저장장치">
           <Input placeholder="예: 512GB SSD" />
+        </Form.Item>
+        <Form.Item label="추가 스펙">
+          <Form.List name="specEntries">
+            {(fields, { add, remove }) => (
+              <>
+                {fields.map(({ key, name, ...restField }) => (
+                  <Space key={key} style={{ display: 'flex', marginBottom: 8 }} align="baseline">
+                    <Form.Item {...restField} name={[name, 'key']} rules={[{ required: true, message: '항목명' }]} style={{ marginBottom: 0 }}>
+                      <Input placeholder="항목명 (예: cpu)" style={{ width: 140 }} />
+                    </Form.Item>
+                    <Form.Item {...restField} name={[name, 'value']} rules={[{ required: true, message: '값' }]} style={{ marginBottom: 0 }}>
+                      <Input placeholder="값 (예: i7-13700)" style={{ width: 200 }} />
+                    </Form.Item>
+                    <MinusCircleOutlined onClick={() => remove(name)} />
+                  </Space>
+                ))}
+                <Button type="dashed" onClick={() => add()} block icon={<PlusOutlined />}>
+                  스펙 추가
+                </Button>
+              </>
+            )}
+          </Form.List>
         </Form.Item>
         <Form.Item name="remarks" label="비고">
           <Input.TextArea rows={2} />
